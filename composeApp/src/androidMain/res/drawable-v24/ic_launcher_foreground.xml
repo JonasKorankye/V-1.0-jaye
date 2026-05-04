@@ -1,0 +1,16 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Speech bubble shape (dark fill) -->
+    <path
+        android:fillColor="#1A1A1A"
+        android:pathData="M22,14 L86,14 L86,78 L86,94 L64,78 L22,78 Z" />
+
+    <!-- "F" letter (white, bold) centered in the bubble -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,26 L72,26 L72,37 L50,37 L50,44 L66,44 L66,55 L50,55 L50,70 L38,70 Z" />
+</vector>

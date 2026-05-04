@@ -1,0 +1,7 @@
+<resources>
+    <style parent="Theme.SplashScreen" name="Theme.FlipVerse.Splash.night">
+        <item name="windowSplashScreenBackground">#000000</item>
+        <item name="postSplashScreenTheme">@android:style/Theme.Material.Light.NoActionBar</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo_night</item>
+    </style>
+</resources>

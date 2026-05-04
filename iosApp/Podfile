@@ -1,0 +1,26 @@
+platform :ios, '16.0'
+
+target 'iosApp' do
+  use_frameworks! :linkage => :static
+  
+  # Firebase frameworks needed by GitLive KMP libraries during Gradle build
+  # These must match what GitLive expects for cinterop
+  pod 'FirebaseCore', '~> 11.0'
+  pod 'FirebaseAuth', '~> 11.0'
+  pod 'FirebaseFirestore', '~> 11.0'
+  pod 'FirebaseFunctions', '~> 11.0'
+  pod 'FirebaseStorage', '~> 11.0'
+  pod 'FirebaseCrashlytics', '~> 11.0'
+  pod 'FirebaseMessaging', '~> 11.0'
+  
+  # Google Sign-In
+  pod 'GoogleSignIn', '~> 8.0'
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+    end
+  end
+end

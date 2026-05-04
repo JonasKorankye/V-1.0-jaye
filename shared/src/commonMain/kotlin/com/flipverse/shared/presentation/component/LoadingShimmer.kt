@@ -1,0 +1,238 @@
+package com.flipverse.shared.presentation.component
+
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.unit.dp
+import com.flipverse.shared.Black
+
+@Composable
+fun LoadingShimmer(
+    modifier: Modifier = Modifier
+) {
+    val shimmerColors = listOf(
+        Black.copy(alpha = 0.1f),
+        Black.copy(alpha = 0.3f),
+        Black.copy(alpha = 0.1f)
+    )
+
+    val transition = rememberInfiniteTransition()
+    val translateAnim = transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+
+    val brush = Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset.Zero,
+        end = Offset(x = translateAnim.value, y = translateAnim.value)
+    )
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(brush)
+    )
+}
+
+@Composable
+fun MetricCardShimmer(
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            LoadingShimmer(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(androidx.compose.foundation.shape.CircleShape)
+            )
+
+            LoadingShimmer(
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .height(16.dp)
+            )
+
+            LoadingShimmer(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .height(24.dp)
+            )
+
+            LoadingShimmer(
+                modifier = Modifier
+                    .fillMaxWidth(0.6f)
+                    .height(12.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ChartShimmer(
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            LoadingShimmer(
+                modifier = Modifier
+                    .fillMaxWidth(0.5f)
+                    .height(20.dp)
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LoadingShimmer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ProductListShimmer(
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                LoadingShimmer(
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                        .height(20.dp)
+                )
+                
+                LoadingShimmer(
+                    modifier = Modifier
+                        .width(60.dp)
+                        .height(16.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            repeat(5) {
+                ProductItemShimmer()
+                if (it < 4) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProductItemShimmer() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        LoadingShimmer(
+            modifier = Modifier.size(32.dp)
+        )
+
+        LoadingShimmer(
+            modifier = Modifier.size(40.dp)
+        )
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            LoadingShimmer(
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .height(16.dp)
+            )
+            
+            LoadingShimmer(
+                modifier = Modifier
+                    .fillMaxWidth(0.6f)
+                    .height(12.dp)
+            )
+        }
+
+        LoadingShimmer(
+            modifier = Modifier
+                .width(50.dp)
+                .height(24.dp)
+        )
+    }
+}
+
+@Composable
+fun DashboardLoadingState(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            repeat(3) {
+                MetricCardShimmer(
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        ChartShimmer(
+            modifier = Modifier.fillMaxWidth()
+        )
+        
+        ChartShimmer(
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        ProductListShimmer(
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+} 

@@ -1,0 +1,345 @@
+package com.flipverse.shared
+
+object Strings {
+    const val subscription_lifetime: String = "Lifetime"
+
+    // Generic
+    const val unknown_user: String = "Unknown User"
+    const val unknown: String = "Unknown"
+    const val back: String = "Back"
+    const val more_options: String = "More options"
+    const val settings: String = "Settings"
+    const val retry: String = "Retry"
+    const val dismiss: String = "Dismiss"
+    const val cancel: String = "Cancel"
+    const val error_prefix: String = "Error: "
+    const val subscribe: String = "Subscribe"
+    const val unknown_lower: String = "unknown"
+
+    // Network/Internet
+    const val no_internet_title: String = "No Internet Connection"
+    const val no_internet_message: String = "Please check your internet connection and try again"
+    const val no_internet_connection: String = "No internet connection"
+
+    // Accessibility
+    const val profile_picture: String = "Profile Picture"
+    const val search_icon: String = "Search icon"
+    const val app_logo: String = "App Logo"
+
+    // Chat common
+    const val no_messages_yet: String = "No messages yet"
+    const val pinned: String = "Pinned"
+    const val muted: String = "Muted"
+    const val send: String = "Send"
+    const val send_as_text: String = "Send as Text"
+    const val send_as_avatar: String = "Send as Avatar"
+    const val send_and_play: String = "Send and Play"
+    const val text_label: String = "Text"
+    const val avatar_label: String = "Avatar"
+    const val play_label: String = "Play"
+    const val mute: String = "Mute"
+    const val pin: String = "Pin"
+    const val delete: String = "Delete"
+    const val type_a_flip_placeholder: String = "Type a Flip..."
+    const val bottom_navigation: String = "Bottom Navigation"
+    const val chat_typing: String = "typing..."
+    const val chat_online: String = "Online"
+    const val chat_connecting: String = "Connecting..."
+    const val last_seen_recently: String = "Last seen recently"
+    const val last_seen_prefix: String = "Last seen "
+    const val last_seen_suffix: String = " ago"
+    const val hello_this_is_my_avatar: String = "Hello! This is my avatar."
+    const val no_avatar_set_title: String = "No Avatar Set"
+    const val no_avatar_set_message: String =
+        "Please set your avatar to use this feature. You can choose from a variety of AI-generated avatars."
+    const val set_avatar_button: String = "Set Avatar"
+
+    // Conversations screen
+    const val messages_title: String = "Messages"
+    const val new_message: String = "New Message"
+    const val tab_flip: String = "Flip"
+    const val tab_avatar: String = "Avatar"
+    const val search_flip_conversations_placeholder: String = "Search Flip conversations..."
+    const val search: String = "Search"
+    const val no_flip_conversations_yet: String = "No Flip conversations yet"
+    const val start_new_flip_conversation: String = "Start a new Flip conversation to get started"
+    const val no_results_found: String = "No results found"
+    const val try_a_different_search_term: String = "Try a different search term"
+
+    // New message screen
+    const val new_message_title: String = "New message"
+    const val search_people_placeholder: String = "Search people..."
+    const val loading_users: String = "Loading users..."
+    const val no_users_found: String = "No users found"
+    const val no_users_available: String = "No users available"
+    const val check_connection_try_again: String = "Check your connection and try again"
+    const val try_a_different_search_term_short: String = "Try a different search term"
+
+    // View profile screen
+    const val no_bio_yet: String = "No bio yet"
+    const val follow: String = "Follow"
+    const val send_message: String = "Send Message"
+
+    // LiveBook - Common
+    const val livebook_title: String = "LiveBook"
+    const val likes_label_suffix: String = " likes"
+    const val completed_suffix: String = " completed"
+    const val bullet: String = "\u2022"
+    const val max_participants_reached: String = "Maximum 8 participants (including initiator)"
+    const val your_turn: String = "Your turn!"
+    const val turn_expires_in: String = "Turn expires in: "
+    const val turn_expired: String = "Turn expired"
+    const val waiting_for: String = "Waiting for "
+
+    // LiveBook - NewLiveBookScreen
+    const val new_story_challenge_title: String = "New Story Challenge"
+    const val select_genre: String = "Select genre"
+    const val loading_genres: String = "Loading genres..."
+    const val no_genres_available: String = "No genres available"
+    const val challenge_title: String = "Challenge title"
+    const val write_initial_paragraph_placeholder: String = "Write the initial paragraph..."
+    const val writing_prefix: String = "Writing: "
+    const val characters_remaining_suffix: String = " characters remaining"
+    const val tag_participants: String = "Tag participants"
+    const val type_follower_names_to_add: String = "Type usernames to add"
+    const val clear_search: String = "Clear search"
+    const val publish: String = "Publish"
+    const val story_published_successfully: String = "Story published successfully"
+    const val remove_from_likes: String = "Remove from likes"
+    const val add_to_likes: String = "Add to likes"
+    const val user_avatar: String = "User avatar"
+    const val remove_user: String = "Remove user"
+
+    // LiveBook - ViewLiveBookScreen
+    const val view_livebook_title: String = "View LiveBook"
+    const val story_not_found: String = "Story not found"
+    const val genre_prefix: String = "Genre: "
+    const val error: String = "Error"
+    const val no_participants_tagged: String = "No participants tagged in this story"
+    const val author_role: String = "Author"
+    const val contributor_role: String = "Contributor"
+    const val no_contribution_yet: String = "No contribution yet"
+    const val contribution_now: String = "Tap to contribute"
+
+    // LiveBook - ContinueLiveBookScreen
+    const val continue_story_challenge_title: String = "Continue Story Challenge"
+    const val loading_writing_turns: String = "Loading your writing turns..."
+    const val no_writing_turns_cd: String = "No writing turns"
+    const val no_active_writing_turns: String = "No active writing turns"
+    const val no_stories_waiting: String =
+        "You don't have any stories waiting for your contribution right now."
+    const val revert_tap_prefix: String = "Tap "
+    const val revert_to_return_prefix: String = " to return to \""
+    const val revert_to_return_suffix: String = "\""
+    const val story_progress_prefix: String = "Story Progress: "
+    const val story_progress_suffix: String = "% complete"
+    const val writing_time_prefix: String = "Writing time: "
+    const val participants: String = "Participants"
+    const val already_contributed: String = "You have already contributed!"
+    const val other_stories_you_can_contribute_to: String = "Other stories you can contribute to:"
+    const val no_more_stories: String = "No more stories"
+    const val no_more_stories_available: String = "No more stories available"
+    const val contributed_to_all_active_stories: String =
+        "You've contributed to all active stories you're part of!"
+    const val your_turn_to_continue_story: String = "It's your turn to continue the story!"
+    const val your_turn_has_expired: String = "Your turn has expired!"
+    const val continue_story_placeholder: String = "Continue the story..."
+    const val submitting: String = "Submitting..."
+    const val submit_contribution: String = "Submit Contribution"
+    const val invalid_content: String = "Invalid content"
+    const val continue_story_cd: String = "Continue story"
+
+    // LiveBook - LeaderBoardTabScreen
+    const val calculating_leaderboard: String = "Calculating leaderboard rankings..."
+    const val no_rankings_available: String = "No rankings available"
+    const val start_participating_livebooks: String =
+        "Start participating in LiveBooks to see rankings!"
+    const val no_rankings: String = "No rankings"
+    const val info: String = "Info"
+    const val close: String = "Close"
+
+    // LiveBook - ClosedTabScreen
+    const val search_completed_stories_placeholder: String = "Search completed stories..."
+    const val loading_completed_stories: String = "Loading completed stories..."
+    const val no_stories_found: String = "No stories found"
+    const val try_searching_different_keywords: String = "Try searching with different keywords"
+    const val no_completed_stories: String = "No completed stories"
+    const val stories_completed_will_appear_here: String =
+        "Stories you've completed will appear here"
+    const val no_stories: String = "No stories"
+
+    // LiveBook - OpenTabScreen
+    const val loading_active_stories: String = "Loading active stories..."
+    const val no_active_stories: String = "No active stories"
+    const val see_stories_participating_here: String =
+        "You'll see stories you're participating in here"
+
+    // Notifications
+    const val notifications_title: String = "Notifications"
+    const val mark_all_as_read: String = "Mark all as read"
+    const val unread_notifications_suffix: String = " unread notifications"
+    const val all_caught_up: String = "All caught up!"
+    const val no_unread_notifications: String = "No unread notifications"
+    const val loading_notifications: String = "Loading notifications..."
+    const val no_notifications: String = "No notifications"
+    const val no_activity_yet: String = "No activity yet"
+    const val likes_comments_replies_here: String = "Likes, comments, and replies will appear here."
+
+    // Dashboard - Search
+    const val loading_ellipsis: String = "Loading..."
+    const val getting_personalized_content: String = "Getting your personalized content"
+    const val search_results: String = "Search Results"
+    const val found_suffix: String = " found"
+    const val loading_more_users: String = "Loading more users..."
+    const val searching_users: String = "Searching users..."
+    const val try_searching_different_keywords_short: String =
+        "Try searching with different keywords"
+    const val more_follow_suggestions: String = "More follow suggestions"
+    const val search_placeholder: String = "Search..."
+    const val search_cd: String = "Search"
+    const val close_icon_cd: String = "Close icon"
+    const val user_profile_thumbnail: String = "User Profile thumbnail image"
+
+    // Dashboard - CreatePost
+    const val create_post_title: String = "Create Post"
+    const val post_button: String = "Post"
+    const val title_optional: String = "Title (Optional)"
+    const val whats_on_your_mind: String = "What's on your mind?"
+    const val category_optional: String = "Category (Optional)"
+    const val tags_comma_separated: String = "Tags (comma-separated)"
+    const val sample_tags_placeholder: String = "travel, photography, nature"
+    const val add_media: String = "Add Media"
+    const val photos: String = "Photos"
+    const val video: String = "Video"
+    const val uploading_media: String = "Uploading media..."
+    const val notifying_followers: String = "Notifying followers..."
+    const val post_shared_to_followers: String = "✓ Post shared to followers' feeds"
+    const val post_created_but_failed: String = "⚠ Post created but feed notification failed"
+
+    // Dashboard - PostDetails
+    const val post_title: String = "Post"
+    const val more: String = "More"
+    const val post_type: String = "Post Type"
+    const val pin_post: String = "Pin Post"
+    const val unpin_post: String = "Unpin Post"
+    const val delete_label: String = delete
+    const val loading_post: String = "Loading post..."
+    const val fetching_post_details: String = "Fetching post details and comments"
+    const val likes_cd: String = "Likes"
+    const val comments_cd: String = "Comments"
+    const val share_cd: String = "Share"
+    const val likes_suffix: String = " Likes"
+    const val comments_suffix: String = " Comments"
+    const val shares_suffix: String = " Shares"
+    const val leave_a_reply_placeholder: String = "Leave a reply..."
+
+    // Dashboard - HomeScreenTab
+    const val youre_all_caught_up: String = "You're all caught up! 🎉"
+    const val oops: String = "Oops!"
+    const val try_again: String = "Try Again"
+    const val share_your_post: String = "Share your Post"
+    const val share_your_reply: String = "Share your Reply"
+
+    // Dashboard - SeeAll
+    const val people_to_follow: String = "People To Follow"
+    const val invite_friends: String = "Invite friends"
+    const val chevron_right_cd: String = "Chevron Right"
+    const val join_me_invite_title: String = "Join me on this awesome app!"
+    const val suggested_people: String = "SUGGESTED PEOPLE"
+    const val refresh_suggested_people: String = "Refresh List of Suggested People"
+    const val following: String = "Following"
+
+    // Dashboard - Quote/Review
+    const val quotes_title: String = "Quotes"
+    const val review_title: String = "Review"
+    const val recommendation_title: String = "Recommendation"
+    const val tag_friends: String = "Tag friends"
+    const val type_follower_names_to_add_dashboard: String = "Type follower names to add"
+    const val whats_new_question: String = "What's new?"
+    const val source_label: String = "Source"
+    const val post_action: String = post_button
+
+    // Explore
+    const val explore_title: String = "Explore"
+    const val tab_discover: String = "Discover"
+    const val tab_bookstore: String = "Bookstore"
+    const val tab_library: String = "Library"
+    const val search_for_a_book: String = "Search for a book..."
+    const val search_icon_cd: String = "Search icon"
+    const val best_sellers: String = "Best sellers"
+    const val featured_deals: String = "Featured deals"
+    const val most_wished_for: String = "Most wished for"
+    const val see_more: String = "See more"
+    const val limited_deal: String = "Limited deal"
+    const val import_your_book: String = "Import your Book"
+    const val explore_icon_cd: String = "Explore Icon"
+    const val import_your_books_to_get_started: String = "Import your own books to get started."
+    const val explore_cta: String = "EXPLORE"
+
+    // Auth
+    const val whats_your_email: String = "What's your email?"
+    const val email_address: String = "Email address"
+    const val well_send_code: String = "We'll send you a confirmation code."
+    const val continue_label: String = "Continue"
+    const val log_in_to_flipverse: String = "Log in to FlipVerse"
+    const val sign_up_with_email: String = "Sign Up with email"
+    const val set_your_password: String = "Set your password"
+    const val password_label: String = "Password"
+    const val confirm_password_label: String = "Confirm Password"
+    const val please_wait: String = "Please wait..."
+    const val forgot_password: String = "Forgot Password?"
+
+    // BookStore
+    const val add_to_cart: String = "Add to Cart"
+    const val cart: String = "Cart"
+    const val book_details: String = "Book Details"
+    const val by: String = "By"
+    const val published: String = "Published"
+    const val pages: String = "pages"
+    const val rating: String = "Rating"
+    const val ratings: String = "ratings"
+    const val no_description: String = "No description available"
+    const val search_books: String = "Search books..."
+    const val loading_books: String = "Loading books..."
+    const val no_books_found: String = "No books found"
+    const val try_different_search: String = "Try a different search term"
+
+    // Cart
+    const val your_cart: String = "Your Cart"
+    const val empty_cart: String = "Your cart is empty"
+    const val start_shopping: String = "Start shopping to add items"
+    const val quantity: String = "Quantity"
+    const val total: String = "Total"
+    const val remove: String = "Remove"
+    const val proceed_to_checkout: String = "Proceed to Checkout"
+    const val cart_updated: String = "Cart updated"
+    const val item_removed: String = "Item removed from cart"
+    const val item_added: String = "Item added to cart"
+    const val items_in_cart: String = "items in cart"
+
+    // Checkout/Payment
+    const val checkout: String = "Checkout"
+    const val payment: String = "Payment"
+    const val order_summary: String = "Order Summary"
+    const val subtotal: String = "Subtotal"
+    const val shipping: String = "Shipping"
+    const val free: String = "Free"
+    const val view_on_google_books: String = "View on Google Books"
+    const val affiliate_purchase: String = "Affiliate Purchase"
+    const val payment_inactive: String = "Payment Processing (Coming Soon)"
+    const val payment_inactive_message: String =
+        "Direct payment is not available yet. You'll be redirected to our affiliate partner to complete your purchase."
+    const val go_to_partner_site: String = "Go to Partner Site"
+    const val open_affiliate_link: String = "Open Affiliate Link"
+    const val continue_shopping: String = "Continue Shopping"
+    const val book_info: String = "Book Info"
+    const val price: String = "Price"
+
+    // Library
+    const val currently_reading: String = "Currently Reading"
+    const val want_to_read: String = "Want to Read"
+    const val already_read: String = "Already Read"
+    const val no_books_in_category: String = "No books in this category yet"
+    const val add_books_to_library: String = "Add books to your library to get started"
+    const val import_book: String = "Import Book"
+}

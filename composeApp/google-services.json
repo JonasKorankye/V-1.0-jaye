@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "885515434564",
+    "project_id": "flipverse-461908",
+    "storage_bucket": "flipverse-461908.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:885515434564:android:5f9d1926e1de8a1812da11",
+        "android_client_info": {
+          "package_name": "com.golda.flipverse"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "885515434564-i2hbuoujgajl55j3q25qp8ffc8p63k0l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.golda.flipverse",
+            "certificate_hash": "4913b17752c5899acb22bbcba9549461bf752d7f"
+          }
+        },
+        {
+          "client_id": "885515434564-4n9ic3rv9rhnm3bdr2aga3i26kdaqdrs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtemRssQLNMuOgSCeBnd0LhbyNKMPFu9E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "885515434564-4n9ic3rv9rhnm3bdr2aga3i26kdaqdrs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
