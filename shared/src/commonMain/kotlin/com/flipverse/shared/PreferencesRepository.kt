@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalSettingsApi::class)
@@ -35,6 +36,7 @@ object PreferencesRepository {
     private const val THUMBNAIL = "thumbnail"
     private const val AVATAR = "avatar"
     private const val IS_FIRST_TIME = "is_first_time"
+    private const val TERMS_ACCEPTED = "terms_accepted"
     private const val APP_THEME = "app_theme_preference"
     private const val FONT_SIZE_SCALE = "font_size_scale"
 
@@ -109,6 +111,14 @@ object PreferencesRepository {
 
     fun getFirstTimeLoginStatus(): Boolean {
         return settings.getBoolean(IS_FIRST_TIME, true)
+    }
+
+    fun saveTermsAccepted(accepted: Boolean) {
+        settings.putBoolean(TERMS_ACCEPTED, accepted)
+    }
+
+    fun hasAcceptedTerms(): Boolean {
+        return settings.getBoolean(TERMS_ACCEPTED, false)
     }
 
 
@@ -192,6 +202,21 @@ object PreferencesRepository {
         val jsonString =
             json.encodeToString(FlipNomenclatures.SelectedFlipAccounts.serializer(), accountsList)
         putString("accounts_key", jsonString)
+    }
+
+    fun saveBlockedUserIds(userIds: List<String>) {
+        val jsonString = json.encodeToString(ListSerializer(String.serializer()), userIds.distinct())
+        putString("blocked_users_key", jsonString)
+    }
+
+    fun loadBlockedUserIds(): List<String> {
+        val jsonString = getString("blocked_users_key", "")
+        if (jsonString.isBlank() || jsonString == "[]") return emptyList()
+        return try {
+            json.decodeFromString(ListSerializer(String.serializer()), jsonString)
+        } catch (_: Exception) {
+            emptyList()
+        }
     }
 
     fun loadFlipAccounts(): List<String> {

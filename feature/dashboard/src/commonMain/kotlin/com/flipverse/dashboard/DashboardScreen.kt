@@ -82,6 +82,7 @@ import com.flipverse.dashboard.component.TabItem
 import com.flipverse.dashboard.component.FollowingTab
 import com.flipverse.shared.domain.FabItem
 import com.flipverse.shared.Alpha
+import com.flipverse.shared.BlackLight
 import com.flipverse.shared.PreferencesRepository.getFullName
 import com.flipverse.shared.PreferencesRepository.getThumbnail
 import com.flipverse.shared.Resources
@@ -593,7 +594,7 @@ fun DashboardScreen(
             errorContainerColor = MaterialTheme.colorScheme.error,
             errorContentColor = MaterialTheme.colorScheme.onErrorContainer,
             successContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            successContentColor = MaterialTheme.colorScheme.onPrimary,
+            successContentColor = BlackLight,
             showCopyButton = false
         ) {
             Column(

@@ -19,6 +19,9 @@ import com.flipverse.shared.PreferencesRepository.loadFlipInterests
 import com.flipverse.shared.PreferencesRepository.saveEmail
 import com.flipverse.shared.PreferencesRepository.saveFlipGenres
 import com.flipverse.shared.PreferencesRepository.saveFlipInterests
+import com.flipverse.shared.PreferencesRepository.saveFirstName
+import com.flipverse.shared.PreferencesRepository.saveFullName
+import com.flipverse.shared.PreferencesRepository.saveLastName
 import com.flipverse.shared.PreferencesRepository.savePassword
 import com.flipverse.shared.PreferencesRepository.saveUsername
 import com.flipverse.shared.PreferencesRepository.saveThumbnail
@@ -121,6 +124,29 @@ class AuthViewModel(
                 onError("Error creating user: ${e.message}")
             }
         }
+    }
+
+    fun preloadSocialIdentity(fvUser: FirebaseUser?) {
+        if (fvUser == null) return
+
+        val resolvedFullName = fvUser.displayName?.trim().orEmpty()
+        if (resolvedFullName.isNotBlank()) {
+            authState = authState.copy(fullName = resolvedFullName)
+            saveFullName(resolvedFullName)
+            saveFirstName(resolvedFullName.split(" ").firstOrNull() ?: resolvedFullName)
+            saveLastName(
+                resolvedFullName.split(" ").drop(1).joinToString(" ").ifBlank {
+                    resolvedFullName.split(" ").lastOrNull() ?: ""
+                }
+            )
+        }
+
+        fvUser.email?.trim()
+            ?.takeIf { it.isNotBlank() }
+            ?.let { email ->
+                saveEmail(email)
+                authState = authState.copy(emailId = email)
+            }
     }
 
 

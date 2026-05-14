@@ -80,7 +80,6 @@ import rememberMessageBarState
 fun CreateProfileScreen(
     navigateToCreateUsername: () -> Unit
 ) {
-    var fullName by rememberSaveable { mutableStateOf("") }
     val viewModel = koinViewModel<AuthViewModel>()
     val authState = viewModel.authState
     val onAction = viewModel::onAction

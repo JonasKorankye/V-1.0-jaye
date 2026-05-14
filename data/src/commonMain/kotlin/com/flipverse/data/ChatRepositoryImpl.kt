@@ -2,6 +2,7 @@ package com.flipverse.data
 
 import com.flipverse.data.domain.ChatRepository
 import com.flipverse.data.util.getCurrentTimeMillis
+import com.flipverse.data.util.randomFirestoreId
 import com.flipverse.data.util.CrashlyticsLogger
 import com.flipverse.shared.RequestState
 import com.flipverse.shared.domain.ChatMessage
@@ -78,6 +79,7 @@ class ChatRepositoryImpl(
     private val typingIndicatorsCollection = Firebase.firestore.collection("typing_indicators")
     private val userStatusCollection = Firebase.firestore.collection("user_status")
     private val usersCollection = Firebase.firestore.collection("user")
+    private val chatReportsCollection = Firebase.firestore.collection("chat_reports")
 
     // Cache for user details to avoid redundant fetches
     private val userDetailsCache = mutableMapOf<String, Pair<ChatParticipant, Long>>()
@@ -780,6 +782,47 @@ class ChatRepositoryImpl(
             RequestState.Success(Unit)
         } catch (e: Exception) {
             RequestState.Error("Failed to delete conversation: ${e.message}")
+        }
+    }
+
+    override suspend fun reportConversation(
+        conversationId: String,
+        reportedByUserId: String,
+        reportedUserId: String?
+    ): RequestState<Unit> {
+        if (conversationId.isBlank() || reportedByUserId.isBlank()) {
+            return RequestState.Error("Conversation ID and reporting user are required.")
+        }
+
+        return try {
+            val currentTime = getCurrentTimeMillis()
+            val reportId = randomFirestoreId()
+
+            println(
+                "🚩 reportConversation called with conversationId=$conversationId, reportedByUserId=$reportedByUserId, reportedUserId=$reportedUserId, reportId=$reportId"
+            )
+            println("🚩 Writing Firestore path: chat_reports/$reportId")
+
+            chatReportsCollection.document(reportId).set(
+                mapOf(
+                    "id" to reportId,
+                    "conversationId" to conversationId,
+                    "reportedByUserId" to reportedByUserId,
+                    "reportedUserId" to (reportedUserId ?: ""),
+                    "status" to "pending",
+                    "source" to "app",
+                    "createdAtMillis" to currentTime,
+                    "updatedAtMillis" to currentTime
+                )
+            )
+
+            println("✅ reportConversation write completed for reportId=$reportId")
+
+            RequestState.Success(Unit)
+        } catch (e: Exception) {
+            println("❌ reportConversation failed for conversationId=$conversationId, reportedByUserId=$reportedByUserId: ${e.message}")
+            e.printStackTrace()
+            RequestState.Error("Failed to report conversation: ${e.message}")
         }
     }
 

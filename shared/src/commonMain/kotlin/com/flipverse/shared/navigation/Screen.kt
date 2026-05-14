@@ -6,6 +6,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class Screen {
     @Serializable
+    data object ConsentGate : Screen()
+
+    @Serializable
     data object Auth: Screen()
 
     @Serializable

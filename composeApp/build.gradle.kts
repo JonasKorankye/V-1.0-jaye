@@ -130,8 +130,8 @@ android {
         applicationId = "com.golda.flipverse"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 4
-        versionName = "2.3"
+        versionCode = 5
+        versionName = "2.4"
     }
     
     signingConfigs {
@@ -149,8 +149,17 @@ android {
         }
     }
     buildTypes {
-        getByName("release") {
+        getByName("debug") {
             isMinifyEnabled = false
+            isShrinkResources = false
+        }
+        getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android.txt"),
+                "proguard-rules.pro"
+            )
             signingConfig = signingConfigs.getByName("release")
         }
     }
@@ -163,4 +172,3 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
 }
-

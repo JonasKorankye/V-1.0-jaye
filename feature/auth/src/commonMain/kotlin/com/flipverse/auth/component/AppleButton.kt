@@ -22,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,7 +33,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.flipverse.shared.FontSize
 import com.flipverse.shared.Resources
-import com.flipverse.shared.WorkSansBoldFont
 import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -43,6 +41,7 @@ import org.jetbrains.compose.resources.painterResource
 fun AppleButton(
     modifier: Modifier = Modifier,
     loading: Boolean = false,
+    enabled: Boolean = true,
     primaryText: String = "Continue with Apple",
     secondaryText: String = "Please wait...",
     icon: DrawableResource = if (isSystemInDarkTheme()) Resources.Image.AppleBlack else Resources.Image.AppleWhite,
@@ -59,14 +58,14 @@ fun AppleButton(
     }
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .clip(shape = shape)
             .border(
                 width = 1.dp,
                 color = borderColor,
                 shape = shape
             )
-            .clickable(enabled = !loading) { onClick() },
+            .clickable(enabled = enabled && !loading) { onClick() },
         color = backgroundColor
     ) {
         Row(

@@ -30,7 +30,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -64,6 +66,7 @@ import com.flipverse.shared.Resources.Icon.Delete
 import com.flipverse.shared.Resources.Icon.Mute
 import com.flipverse.shared.domain.ChatParticipant
 import com.flipverse.shared.Strings
+import com.flipverse.shared.util.openEmailApp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.vectorResource
@@ -82,6 +85,7 @@ fun ChatScreen(
 
     var messageText by remember { mutableStateOf("") }
     var showMenu by remember { mutableStateOf(false) }
+    var showReportNotice by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
@@ -290,6 +294,49 @@ fun ChatScreen(
                         DropdownMenuItem(
                             leadingIcon = {
                                 Icon(
+                                    imageVector = vectorResource(Resources.Icon.Warning),
+                                    contentDescription = "Report conversation",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            },
+                            text = {
+                                Text(
+                                    "Report conversation",
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            },
+                            onClick = {
+                                chatViewModel.reportConversation(
+                                    conversationId = conversationId,
+                                    reportedUserId = chatState.otherParticipant?.userId
+                                ) { didSucceed ->
+                                    if (didSucceed) {
+                                        showReportNotice = true
+                                    }
+                                }
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = vectorResource(Delete),
+                                    contentDescription = "Block user",
+                                    tint = Red
+                                )
+                            },
+                            text = { Text("Block user", color = Red) },
+                            onClick = {
+                                val targetUserId = chatState.otherParticipant?.userId
+                                    ?: ""
+                                chatViewModel.blockUser(targetUserId, conversationId)
+                                showMenu = false
+                                navigateBack()
+                            }
+                        )
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
                                     imageVector = vectorResource(Delete),
                                     contentDescription = Strings.delete,
                                     tint = Red
@@ -316,6 +363,37 @@ fun ChatScreen(
                 .align(Alignment.Center)
                 .padding(top = 64.dp, bottom = 56.dp)
         ) {
+            if (showReportNotice) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = "Report recorded",
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Text(
+                            text = "Blocking removes this conversation from your inbox immediately.",
+                            color = MaterialTheme.colorScheme.onSecondary
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Spacer(modifier = Modifier.weight(1f))
+                            TextButton(onClick = { openEmailApp("support@flipverse.app") }) {
+                                Text("Contact support", color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                            TextButton(onClick = { showReportNotice = false }) {
+                                Text("Dismiss", color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                        }
+                    }
+                }
+            }
 
 //            ChatBackgroundComplex(isDarkTheme = isSystemInDarkTheme())
             // Messages list that adjusts to keyboard

@@ -32,6 +32,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.flipverse.auth.screens.AuthScreen
 import com.flipverse.auth.screens.ChooseInterestsScreen
+import com.flipverse.auth.screens.ConsentGateScreen
 import com.flipverse.auth.screens.CreateProfileScreen
 import com.flipverse.auth.screens.CreateUsernameScreen
 import com.flipverse.auth.screens.LoginWithPasswordScreen
@@ -62,6 +63,17 @@ fun SetupNavGraph(
         navController = navController,
         startDestination = startDestination
     ) {
+        composable<Screen.ConsentGate> {
+            ConsentGateScreen(
+                onAgree = {
+                    navController.navigate(Screen.Auth) {
+                        popUpTo<Screen.ConsentGate> {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
         composable<Screen.Auth> {
             AuthScreen(
                 navigateToDashboard = {

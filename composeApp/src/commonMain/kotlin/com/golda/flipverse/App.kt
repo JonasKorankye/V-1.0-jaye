@@ -1,6 +1,5 @@
 package com.golda.flipverse
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,9 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -23,6 +20,7 @@ import com.flipverse.data.domain.UserRepository
 import com.flipverse.navigation.SetupNavGraph
 import com.flipverse.shared.Constants
 import com.flipverse.shared.FlipVerseTheme
+import com.flipverse.shared.PreferencesRepository.hasAcceptedTerms
 import com.flipverse.shared.navigation.MainDashboardRoutes
 import com.flipverse.shared.navigation.NotificationNavigationBridge
 import com.flipverse.shared.navigation.NotificationNavigationInfo
@@ -101,15 +99,15 @@ fun App(initialDeepLink: DeepLinkInfo? = null) {
 
     FlipVerseTheme {
         val userRepository = koinInject<UserRepository>()
-        val scope = rememberCoroutineScope()
-        var appReady by rememberSaveable { mutableStateOf(false) }
         val isUserAuthenticated = rememberSaveable { userRepository.getCurrentUserId() != null }
 
         val startDestination = remember {
             println("📱 App: User authenticated: $isUserAuthenticated")
             if (isUserAuthenticated) {
                 MainDashboardRoutes.FlipHomePages
-            } else Screen.Auth
+            } else if (hasAcceptedTerms()) {
+                Screen.Auth
+            } else Screen.ConsentGate
         }
 
         // Fetch user details outside of remember{} to avoid side-effects during composition
@@ -131,7 +129,6 @@ fun App(initialDeepLink: DeepLinkInfo? = null) {
             GoogleAuthProvider.create(
                 credentials = GoogleAuthCredentials(serverId = Constants.WEB_CLIENT_ID)
             )
-            appReady = true
             println("📱 App: Ready to display content")
 
             // Log the stored deep link
@@ -139,22 +136,17 @@ fun App(initialDeepLink: DeepLinkInfo? = null) {
             println("📱 App: Stored deep link in manager: $storedLink")
         }
 
-        AnimatedVisibility(
-            modifier = Modifier.fillMaxSize(),
-            visible = appReady
-        ) {
-            // Make the navigation reactive to deep link changes
-            val currentPendingDeepLink by DeepLinkManager.pendingDeepLink
+        // Make the navigation reactive to deep link changes
+        val currentPendingDeepLink by DeepLinkManager.pendingDeepLink
 
-            // Force recomposition when deep link changes
-            LaunchedEffect(currentPendingDeepLink) {
-                if (currentPendingDeepLink != null) {
-                    println("📱 App: Deep link changed, triggering navigation update: $currentPendingDeepLink")
-                }
+        // Force recomposition when deep link changes
+        LaunchedEffect(currentPendingDeepLink) {
+            if (currentPendingDeepLink != null) {
+                println("📱 App: Deep link changed, triggering navigation update: $currentPendingDeepLink")
             }
-
-            SetupNavGraphWithDeepLink(startDestination, currentPendingDeepLink)
         }
+
+        SetupNavGraphWithDeepLink(startDestination, currentPendingDeepLink)
 
     }
 }

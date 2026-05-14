@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,7 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.flipverse.shared.FontSize
 import com.flipverse.shared.Resources
-import com.flipverse.shared.WorkSansBoldFont
 import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -43,6 +41,7 @@ import org.jetbrains.compose.resources.painterResource
 fun GoogleButton(
     modifier: Modifier = Modifier,
     loading: Boolean = false,
+    enabled: Boolean = true,
     primaryText: String = "Continue with Google",
     secondaryText: String = "Please wait...",
     icon: DrawableResource = Resources.Image.Google,
@@ -59,14 +58,14 @@ fun GoogleButton(
     }
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .clip(shape = shape)
             .border(
                 width = 1.dp,
                 color = borderColor,
                 shape = shape
             )
-            .clickable(enabled = !loading) { onClick() },
+            .clickable(enabled = enabled && !loading) { onClick() },
         color = backgroundColor
     ) {
         Row(

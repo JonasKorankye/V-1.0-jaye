@@ -76,6 +76,12 @@ interface ChatRepository {
 
     suspend fun deleteConversation(conversationId: String, userId: String): RequestState<Unit>
 
+    suspend fun reportConversation(
+        conversationId: String,
+        reportedByUserId: String,
+        reportedUserId: String? = null
+    ): RequestState<Unit>
+
     // Search
     suspend fun searchMessages(
         conversationId: String,

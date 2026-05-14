@@ -3,6 +3,7 @@ package com.flipverse.data
 import com.flipverse.data.domain.PostRepository
 import com.flipverse.data.util.formatTimestamp
 import com.flipverse.data.util.generateUserId
+import com.flipverse.data.util.randomFirestoreId
 import com.flipverse.data.util.toFirebaseTimestamp
 import com.flipverse.data.util.toFormattedString
 import com.flipverse.data.util.CrashlyticsLogger
@@ -1184,6 +1185,59 @@ class PostRepositoryImpl : PostRepository {
             Result.success(comments)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    override suspend fun reportPost(
+        postId: String,
+        reportedByUserId: String,
+        reportedAuthorId: String?
+    ): RequestState<Unit> {
+        if (postId.isBlank() || reportedByUserId.isBlank()) {
+            return RequestState.Error("Post ID and reporting user are required.")
+        }
+
+        return try {
+            val reportId = randomFirestoreId()
+            val timestamp = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).toString()
+
+            println(
+                "🚩 reportPost called with postId=$postId, reportedByUserId=$reportedByUserId, reportedAuthorId=$reportedAuthorId, reportId=$reportId"
+            )
+            println("🚩 Writing Firestore path: post_reports/$reportId")
+
+            Firebase.firestore.collection("post_reports")
+                .document(reportId)
+                .set(
+                    mapOf(
+                        "id" to reportId,
+                        "postId" to postId,
+                        "reportedByUserId" to reportedByUserId,
+                        "reportedAuthorId" to (reportedAuthorId ?: ""),
+                        "status" to "pending",
+                        "source" to "app",
+                        "createdAt" to timestamp,
+                        "updatedAt" to timestamp
+                    )
+                )
+
+            println("✅ reportPost report document write completed for reportId=$reportId")
+            println("🚩 Updating Firestore path: posts/$postId metadata.reportCount + moderationStatus")
+
+            postsCollection.document(postId).update(
+                mapOf(
+                    "metadata.reportCount" to FieldValue.increment(1),
+                    "metadata.moderationStatus" to ModerationStatus.FLAGGED.name
+                )
+            )
+
+            println("✅ reportPost post metadata update completed for postId=$postId")
+
+            RequestState.Success(Unit)
+        } catch (e: Exception) {
+            println("❌ reportPost failed for postId=$postId, reportedByUserId=$reportedByUserId: ${e.message}")
+            e.printStackTrace()
+            RequestState.Error("Failed to report post: ${e.message}")
         }
     }
 }

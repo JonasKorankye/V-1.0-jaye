@@ -3,9 +3,12 @@ package com.flipverse.chat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.flipverse.data.domain.ChatRepository
+import com.flipverse.data.domain.UserRepository
 import com.flipverse.data.util.getCurrentTimeMillis
 import com.flipverse.shared.PreferencesRepository.getEmail
 import com.flipverse.shared.PreferencesRepository.getId
+import com.flipverse.shared.PreferencesRepository.loadBlockedUserIds
+import com.flipverse.shared.PreferencesRepository.saveBlockedUserIds
 import com.flipverse.shared.RequestState
 import com.flipverse.shared.domain.ChatMessage
 import com.flipverse.shared.domain.ChatParticipant
@@ -24,6 +27,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 
 data class ChatState(
     val conversations: List<ConversationPreview> = emptyList(),
@@ -42,7 +46,8 @@ data class ChatState(
 )
 
 class ChatViewModel(
-    private val chatRepository: ChatRepository
+    private val chatRepository: ChatRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
@@ -74,8 +79,35 @@ class ChatViewModel(
     }
 
     init {
-        _uiState.value = _uiState.value.copy(currentUserId = getEmail())
+        _uiState.value = _uiState.value.copy(currentUserId = resolveCurrentUserId())
+        syncBlockedUsers()
         loadConversations()
+    }
+
+    private fun resolveCurrentUserId(): String {
+        return getId().ifBlank { userRepository.getCurrentUserId().orEmpty().ifBlank { getEmail() } }
+    }
+
+    private fun syncBlockedUsers() {
+        val currentUserId = resolveCurrentUserId()
+        if (currentUserId.isBlank()) return
+
+        viewModelScope.launch(exceptionHandler + Dispatchers.IO) {
+            when (val result = userRepository.getBlockedUserIds(currentUserId)) {
+                is RequestState.Success -> saveBlockedUserIds(result.getSuccessData())
+                is RequestState.Error -> {
+                    if (loadBlockedUserIds().isEmpty()) {
+                        _uiState.value = _uiState.value.copy(error = result.getErrorMessage())
+                    }
+                }
+                else -> Unit
+            }
+        }
+    }
+
+    private fun isBlockedUser(userId: String?): Boolean {
+        if (userId.isNullOrBlank()) return false
+        return loadBlockedUserIds().contains(userId)
     }
 
     fun loadConversations(forceRefresh: Boolean = false) {
@@ -100,8 +132,11 @@ class ChatViewModel(
                 val result = chatRepository.getConversations(_uiState.value.currentUserId)
                 when (result) {
                     is RequestState.Success -> {
+                        val filteredConversations = result.getSuccessData().filterNot {
+                            isBlockedUser(it.otherParticipant?.userId)
+                        }
                         _uiState.value = _uiState.value.copy(
-                            conversations = result.getSuccessData(),
+                            conversations = filteredConversations,
                             isLoading = false,
                             lastConversationsLoadTime = currentTime
                         )
@@ -218,7 +253,9 @@ class ChatViewModel(
             chatRepository.getMessagesFlow(conversationId).collectLatest { result ->
                 when (result) {
                     is RequestState.Success -> {
-                        val newMessages = result.getSuccessData().sortedBy { it.timestamp }
+                        val newMessages = result.getSuccessData()
+                            .filterNot { isBlockedUser(it.senderId) }
+                            .sortedBy { it.timestamp }
                         val currentMessages = _uiState.value.messages
 
                         // Merge real-time messages with optimistic messages
@@ -604,6 +641,63 @@ class ChatViewModel(
         viewModelScope.launch(exceptionHandler + Dispatchers.IO) {
             chatRepository.deleteConversation(conversationId, _uiState.value.currentUserId)
             loadConversations(forceRefresh = true) // Force refresh conversations list
+        }
+    }
+
+    fun blockUser(userId: String, conversationId: String? = null) {
+        if (userId.isBlank()) return
+        val updatedBlockedUsers = (loadBlockedUserIds() + userId).distinct()
+        saveBlockedUserIds(updatedBlockedUsers)
+
+        _uiState.value = _uiState.value.copy(
+            conversations = _uiState.value.conversations.filterNot {
+                it.otherParticipant?.userId == userId
+            },
+            messages = _uiState.value.messages.filterNot { it.senderId == userId },
+            otherParticipant = if (
+                _uiState.value.otherParticipant?.userId == userId
+            ) null else _uiState.value.otherParticipant,
+            error = null
+        )
+
+        viewModelScope.launch(exceptionHandler + Dispatchers.IO) {
+            val currentUserId = resolveCurrentUserId()
+            if (currentUserId.isNotBlank()) {
+                when (val result = userRepository.blockUser(currentUserId, userId)) {
+                    is RequestState.Success -> saveBlockedUserIds(result.getSuccessData())
+                    is RequestState.Error -> {
+                        _uiState.value = _uiState.value.copy(error = result.getErrorMessage())
+                    }
+                    else -> Unit
+                }
+            }
+        }
+
+        if (!conversationId.isNullOrBlank()) {
+            deleteConversation(conversationId)
+        }
+    }
+
+    fun reportConversation(
+        conversationId: String,
+        reportedUserId: String? = null,
+        onComplete: (Boolean) -> Unit = {}
+    ) {
+        viewModelScope.launch(exceptionHandler + Dispatchers.IO) {
+            val currentUserId = resolveCurrentUserId()
+            val result = chatRepository.reportConversation(
+                conversationId = conversationId,
+                reportedByUserId = currentUserId,
+                reportedUserId = reportedUserId
+            )
+
+            if (result is RequestState.Error) {
+                _uiState.value = _uiState.value.copy(error = result.getErrorMessage())
+            }
+
+            withContext(Dispatchers.Main) {
+                onComplete(result is RequestState.Success)
+            }
         }
     }
 

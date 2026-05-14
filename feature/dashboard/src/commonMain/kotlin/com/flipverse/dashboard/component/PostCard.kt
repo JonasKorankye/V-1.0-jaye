@@ -27,6 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,6 +64,7 @@ import com.flipverse.shared.Resources.Icon.Mute
 import com.flipverse.shared.Resources.Icon.VisibilityOff
 import com.flipverse.shared.domain.Post
 import com.flipverse.shared.presentation.component.FlipExpandableText
+import com.flipverse.shared.util.openEmailApp
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.vectorResource
@@ -79,8 +81,11 @@ fun PostCard(
     onImageClick: (String) -> Unit,
     onClickHidePost: (String) -> Unit,
     onPinPost: (postId: String, isPinned: Boolean) -> Unit,
+    onBlockAuthor: (String, (Boolean) -> Unit) -> Unit,
+    onReportPost: (postId: String, authorId: String, onComplete: (Boolean) -> Unit) -> Unit,
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var showModerationActions by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     Card(
@@ -275,43 +280,90 @@ fun PostCard(
                             thickness = 1.dp,
                             color = Color.Gray.copy(alpha = Alpha.DISABLED)
                         )
+//                        DropdownMenuItem(
+//                            leadingIcon = {
+//                                Icon(
+//                                    imageVector = vectorResource(Resources.Icon.Pin),
+//                                    contentDescription = "Pin Post",
+//                                    tint = MaterialTheme.colorScheme.onPrimary
+//                                )
+//                            },
+//                            text = {
+//                                Text(
+//                                    text = if (post.isPinned) "Unpin Post" else "Pin Post",
+//                                    color = MaterialTheme.colorScheme.onPrimary
+//                                )
+//                            },
+//                            onClick = {
+//                                onPinPost(post.id, !post.isPinned)
+//                                showMenu = false
+//                            }
+//                        )
+//                        DropdownMenuItem(
+//                            leadingIcon = {
+//                                Icon(
+//                                    imageVector = vectorResource(VisibilityOff),
+//                                    contentDescription = "Mute",
+//                                    tint = MaterialTheme.colorScheme.onPrimary
+//                                )
+//                            },
+//                            text = {
+//                                Text(
+//                                    "Hide Post",
+//                                    color = MaterialTheme.colorScheme.onPrimary
+//                                )
+//                            },
+//                            onClick = {
+//                                // Handle Hide action
+//                                onClickHidePost(post.id)
+//                                showMenu = false
+//                            }
+//                        )
                         DropdownMenuItem(
                             leadingIcon = {
                                 Icon(
-                                    imageVector = vectorResource(Resources.Icon.Pin),
-                                    contentDescription = "Pin Post",
+                                    imageVector = vectorResource(Resources.Icon.Warning),
+                                    contentDescription = "Report post",
                                     tint = MaterialTheme.colorScheme.onPrimary
                                 )
                             },
                             text = {
                                 Text(
-                                    text = if (post.isPinned) "Unpin Post" else "Pin Post",
+                                    "Report post",
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
                             },
                             onClick = {
-                                onPinPost(post.id, !post.isPinned)
                                 showMenu = false
+                                onReportPost(post.id, post.authorId) { didSucceed ->
+                                    if (didSucceed) {
+                                        showModerationActions = true
+                                    }
+                                }
                             }
                         )
                         DropdownMenuItem(
                             leadingIcon = {
                                 Icon(
-                                    imageVector = vectorResource(VisibilityOff),
-                                    contentDescription = "Mute",
-                                    tint = MaterialTheme.colorScheme.onPrimary
+                                    painter = painterResource(Resources.Icon.Delete),
+                                    contentDescription = "Block author",
+                                    tint = Red
                                 )
                             },
                             text = {
                                 Text(
-                                    "Hide Post",
-                                    color = MaterialTheme.colorScheme.onPrimary
+                                    "Block author",
+                                    color = Red
                                 )
                             },
                             onClick = {
-                                // Handle Hide action
-                                onClickHidePost(post.id)
                                 showMenu = false
+                                onBlockAuthor(post.authorId) { didSucceed ->
+                                    if (didSucceed) {
+                                        onClickHidePost(post.id)
+                                        messageBarState.addSuccess("Author blocked. Their content has been removed from your feed.")
+                                    }
+                                }
                             }
                         )
 
@@ -339,6 +391,43 @@ fun PostCard(
                         )
                     }
 
+                }
+            }
+
+            if (showModerationActions) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = "Report sent",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "FlipVerse reviews reports and removes objectionable content or abusive users. For urgent moderation issues, contact support directly.",
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            fontSize = 13.sp
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            TextButton(onClick = { openEmailApp("support@flipverse.app") }) {
+                                Text("Contact support", color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                            TextButton(onClick = { showModerationActions = false }) {
+                                Text("Dismiss", color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                        }
+                    }
                 }
             }
 

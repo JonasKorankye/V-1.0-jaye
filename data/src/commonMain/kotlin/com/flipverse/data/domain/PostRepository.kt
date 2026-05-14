@@ -107,4 +107,10 @@ interface PostRepository {
 
     suspend fun getPostLikes(postId: String, limit: Int = 50): Result<List<PostLike>>
     suspend fun getRecentCommentsRaw(postId: String, limit: Int = 10): Result<List<Comment>>
+
+    suspend fun reportPost(
+        postId: String,
+        reportedByUserId: String,
+        reportedAuthorId: String? = null
+    ): RequestState<Unit>
 }

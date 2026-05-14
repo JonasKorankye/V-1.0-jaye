@@ -144,6 +144,12 @@ fun HomeScreenTab(
                                 onClickDeletePost = { id -> viewModel.deletePost(id) },
                                 onClickHidePost = { id -> viewModel.hidePost(id) },
                                 onImageClick = { userId -> navigateToViewProfile(userId) },
+                                onBlockAuthor = { authorId, onComplete ->
+                                    viewModel.blockAuthor(authorId, onComplete)
+                                },
+                                onReportPost = { postId, authorId, onComplete ->
+                                    viewModel.reportPost(postId, authorId, onComplete)
+                                },
                             )
 
                             // Show people to follow after the first 2 posts (index 1 since 0-based)
@@ -364,6 +370,12 @@ fun HomeScreenTab(
                                     println("Imagey clicked for user: $userId")
                                     navigateToViewProfile(userId)
                                 },
+                                onBlockAuthor = { authorId, onComplete ->
+                                    viewModel.blockAuthor(authorId, onComplete)
+                                },
+                                onReportPost = { postId, authorId, onComplete ->
+                                    viewModel.reportPost(postId, authorId, onComplete)
+                                },
                             )
 //                                    Show people to follow after the first 2 posts (index 1 since 0-based)
                             if (uiState.suggestedUsers.isNotEmpty() && index == 3) {
@@ -484,5 +496,3 @@ fun HomeScreenTab(
         transitionSpec = fadeIn() togetherWith fadeOut()
     )
 }
-
-

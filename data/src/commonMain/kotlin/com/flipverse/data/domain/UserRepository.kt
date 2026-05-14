@@ -9,6 +9,13 @@ import kotlinx.coroutines.flow.Flow
 interface UserRepository {
     fun getCurrentUserId(): String?
 
+    suspend fun getBlockedUserIds(currentUserId: String): RequestState<List<String>>
+
+    suspend fun blockUser(
+        currentUserId: String,
+        blockedUserId: String
+    ): RequestState<List<String>>
+
     suspend fun fetchUserDetails(userId: String?): String?
 
     suspend fun createUser(

@@ -65,7 +65,7 @@ fun YourAccountScreen(
     onNavigateToChangePassword: () -> Unit = {},
     navigateToTwoFactorAuth: () -> Unit = {}
 ) {
-    var showDeactivateDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
     var showDownloadDataDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -237,7 +237,7 @@ fun YourAccountScreen(
 //
 //            Spacer(modifier = Modifier.height(32.dp))
 
-            // Account Deactivation - Danger Zone
+            // Account Deletion - Danger Zone
             Card(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                 colors = CardDefaults.cardColors(
@@ -253,33 +253,33 @@ fun YourAccountScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { showDeactivateDialog = true },
+                            .clickable { showDeleteDialog = true },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             painter = painterResource(Resources.Icon.Delete),
-                            contentDescription = "Deactivate account",
+                            contentDescription = "Delete account",
                             tint = Red,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Deactivate your account",
+                                text = "Delete your account",
                                 color = Red,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "This will deactivate your account",
+                                text = "Permanently delete your FlipVerse account and personal data",
                                 color = Red.copy(alpha = 0.8f),
                                 fontSize = 14.sp
                             )
                         }
                         Icon(
                             imageVector = vectorResource(Resources.Icon.ArrowRight),
-                            contentDescription = "Go to deactivate",
+                            contentDescription = "Go to delete account",
                             tint = Red.copy(alpha = 0.7f),
                             modifier = Modifier.size(20.dp)
                         )
@@ -291,38 +291,37 @@ fun YourAccountScreen(
         }
     }
 
-    // Deactivate Account Dialog
-    if (showDeactivateDialog) {
+    // Delete Account Dialog
+    if (showDeleteDialog) {
         AlertDialog(
-            onDismissRequest = { showDeactivateDialog = false },
+            onDismissRequest = { showDeleteDialog = false },
             containerColor = White,
             title = {
                 Text(
-                    text = "Deactivate account?",
+                    text = "Delete account?",
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
             },
             text = {
                 Text(
-                    text = "This will deactivate your account. You'll have 30 days to restore it before it becomes permanently unavailable.",
+                    text = "This starts permanent account deletion. You should not need to create a password or use customer support to finish. If deletion is completed on the web, this button opens the direct deletion page.",
                     color = BlackLight
                 )
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        showDeactivateDialog = false
-                        // Handle account deactivation
+                        showDeleteDialog = false
                         openWebBrowser("https://flipverse.app/start/request-deletion.html")
                     }
                 ) {
-                    Text("Deactivate", color = Red)
+                    Text("Continue to deletion", color = Red)
                 }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showDeactivateDialog = false }
+                    onClick = { showDeleteDialog = false }
                 ) {
                     Text("Cancel", color = BlackLight)
                 }

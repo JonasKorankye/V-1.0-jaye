@@ -32,6 +32,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -71,6 +72,7 @@ import com.flipverse.shared.domain.Comment
 import com.flipverse.shared.domain.ImageItem
 import com.flipverse.shared.domain.Post
 import com.flipverse.shared.presentation.component.FlipExpandableText
+import com.flipverse.shared.util.openEmailApp
 import com.flipverse.shared.util.createShareManager
 import com.mohamedrejeb.calf.io.getName
 import com.mohamedrejeb.calf.io.readByteArray
@@ -109,6 +111,7 @@ fun PostDetailsScreen(
     var commentPost by remember { mutableStateOf<Post?>(null) }
     var showCommentReplySheet by remember { mutableStateOf(false) }
     var commentReplyPost by remember { mutableStateOf<Comment?>(null) }
+    var showReportNotice by remember { mutableStateOf(false) }
 
     val context = com.mohamedrejeb.calf.core.LocalPlatformContext.current
     var screenState = viewModel.recommendationScreenState
@@ -336,6 +339,56 @@ fun PostDetailsScreen(
                             DropdownMenuItem(
                                 leadingIcon = {
                                     Icon(
+                                        imageVector = vectorResource(Resources.Icon.Warning),
+                                        contentDescription = "Report post",
+                                        tint = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                },
+                                text = {
+                                    Text(
+                                        "Report post",
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                },
+                                onClick = {
+                                    viewModel.reportPost(
+                                        uiState.postWithComments.post.id,
+                                        uiState.postWithComments.post.authorId
+                                    ) { didSucceed ->
+                                        if (didSucceed) {
+                                            showReportNotice = true
+                                        }
+                                    }
+                                    showMenu = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = vectorResource(Delete),
+                                        contentDescription = "Block author",
+                                        tint = Red
+                                    )
+                                },
+                                text = {
+                                    Text(
+                                        "Block author",
+                                        color = Red
+                                    )
+                                },
+                                onClick = {
+                                    showMenu = false
+                                    viewModel.blockAuthor(uiState.postWithComments.post.authorId) { didSucceed ->
+                                        if (didSucceed) {
+                                            messageBarState.addSuccess("Author blocked. Their content has been removed from your feed.")
+                                            navigateBack()
+                                        }
+                                    }
+                                }
+                            )
+                            DropdownMenuItem(
+                                leadingIcon = {
+                                    Icon(
                                         imageVector = vectorResource(Delete),
                                         contentDescription = Strings.delete_label,
                                         tint = Red
@@ -407,6 +460,41 @@ fun PostDetailsScreen(
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                if (showReportNotice) {
+                    item {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp, bottom = 8.dp),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = "Report recorded",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "FlipVerse reviews abusive content reports. For urgent moderation issues, contact support directly.",
+                                    color = MaterialTheme.colorScheme.onSecondary
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    TextButton(onClick = { openEmailApp("support@flipverse.app") }) {
+                                        Text("Contact support", color = MaterialTheme.colorScheme.onPrimary)
+                                    }
+                                    TextButton(onClick = { showReportNotice = false }) {
+                                        Text("Dismiss", color = MaterialTheme.colorScheme.onPrimary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 item {
                     MainPostItem(
                         post = uiState.postWithComments.post,
@@ -512,9 +600,12 @@ fun MainPostItem(
     onCommentClick: () -> Unit,
     onShareClick: () -> Unit
 ) {
+    val authorAvatarUrl = post.authorProfileImage?.takeIf { it.isNotBlank() }
+        ?: post.thumbnailUrl?.takeIf { it.isNotBlank() }
+
     Column(modifier = Modifier.padding(2.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Avatar(avatarContent = post.thumbnailUrl, name = post.authorName)
+            Avatar(avatarContent = authorAvatarUrl, name = post.authorName)
             Spacer(Modifier.width(12.dp))
             Column {
                 Row {
@@ -832,4 +923,3 @@ fun ActionIconWithText(
         }
     }
 }
-

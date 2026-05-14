@@ -13,9 +13,11 @@ import com.flipverse.data.util.normalizeUsername
 import com.flipverse.shared.PreferencesRepository.getEmail
 import com.flipverse.shared.PreferencesRepository.getId
 import com.flipverse.shared.PreferencesRepository.getUsername
+import com.flipverse.shared.PreferencesRepository.loadBlockedUserIds
 import com.flipverse.shared.PreferencesRepository.saveAvatar
 import com.flipverse.shared.PreferencesRepository.saveCreatedAt
 import com.flipverse.shared.PreferencesRepository.saveFirstName
+import com.flipverse.shared.PreferencesRepository.saveBlockedUserIds
 import com.flipverse.shared.PreferencesRepository.saveFlipAccounts
 import com.flipverse.shared.PreferencesRepository.saveFlipGenres
 import com.flipverse.shared.PreferencesRepository.saveFlipInterests
@@ -57,6 +59,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -138,6 +141,123 @@ class DashboardViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
+    private var blockedUserIdsCache: Set<String> = loadBlockedUserIds().toSet()
+
+    private fun applyBlockedPostFilter(posts: List<Post>): List<Post> {
+        if (blockedUserIdsCache.isEmpty()) return posts
+        return posts.filterNot { blockedUserIdsCache.contains(it.authorId) }
+    }
+
+    private fun applyBlockedSuggestedUserFilter(users: List<User>): List<User> {
+        if (blockedUserIdsCache.isEmpty()) return users
+        return users.filterNot { blockedUserIdsCache.contains(it.id) || blockedUserIdsCache.contains(it.email) }
+    }
+
+    private fun updateBlockedUsersCache(blockedUserIds: List<String>) {
+        val normalizedBlockedUsers = blockedUserIds
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .toSet()
+
+        if (normalizedBlockedUsers == blockedUserIdsCache) return
+
+        blockedUserIdsCache = normalizedBlockedUsers
+        saveBlockedUserIds(normalizedBlockedUsers.toList())
+
+        _uiState.value = _uiState.value.copy(
+            posts = applyBlockedPostFilter(_uiState.value.posts),
+            trendingPosts = applyBlockedPostFilter(_uiState.value.trendingPosts),
+            userPosts = applyBlockedPostFilter(_uiState.value.userPosts),
+            userLikedPosts = applyBlockedPostFilter(_uiState.value.userLikedPosts),
+            suggestedUsers = applyBlockedSuggestedUserFilter(_uiState.value.suggestedUsers)
+        )
+    }
+
+    private fun resolveCurrentUserId(): String {
+        return getId().ifBlank { userRepository.getCurrentUserId().orEmpty().ifBlank { getEmail() } }
+    }
+
+    private fun syncBlockedUsers() {
+        val currentUserId = resolveCurrentUserId()
+        if (currentUserId.isBlank()) return
+
+        viewModelScope.launch(exceptionHandler + Dispatchers.IO) {
+            if (blockedUserIdsCache.isNotEmpty()) {
+                delay(1_500)
+            }
+
+            when (val result = userRepository.getBlockedUserIds(currentUserId)) {
+                is RequestState.Success -> updateBlockedUsersCache(result.getSuccessData())
+                is RequestState.Error -> {
+                    if (blockedUserIdsCache.isEmpty()) {
+                        _uiState.value = _uiState.value.copy(error = result.getErrorMessage())
+                    }
+                }
+                else -> Unit
+            }
+        }
+    }
+
+    fun blockAuthor(
+        authorId: String,
+        onComplete: (Boolean) -> Unit = {}
+    ) {
+        if (authorId.isBlank()) {
+            onComplete(false)
+            return
+        }
+        updateBlockedUsersCache((blockedUserIdsCache + authorId).toList())
+        _uiState.value = _uiState.value.copy(error = null)
+
+        viewModelScope.launch(exceptionHandler + Dispatchers.IO) {
+            val currentUserId = resolveCurrentUserId()
+            if (currentUserId.isNotBlank()) {
+                when (val result = userRepository.blockUser(currentUserId, authorId)) {
+                    is RequestState.Success -> {
+                        updateBlockedUsersCache(result.getSuccessData())
+                        withContext(Dispatchers.Main) {
+                            onComplete(true)
+                        }
+                    }
+                    is RequestState.Error -> {
+                        _uiState.value = _uiState.value.copy(error = result.getErrorMessage())
+                        withContext(Dispatchers.Main) {
+                            onComplete(false)
+                        }
+                    }
+                    else -> Unit
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    onComplete(false)
+                }
+            }
+        }
+    }
+
+    fun reportPost(
+        postId: String,
+        reportedAuthorId: String? = null,
+        onComplete: (Boolean) -> Unit = {}
+    ) {
+        viewModelScope.launch(exceptionHandler + Dispatchers.IO) {
+            val currentUserId = resolveCurrentUserId()
+            val result = postRepository.reportPost(
+                postId = postId,
+                reportedByUserId = currentUserId,
+                reportedAuthorId = reportedAuthorId
+            )
+
+            if (result is RequestState.Error) {
+                _uiState.value = _uiState.value.copy(error = result.getErrorMessage())
+            }
+
+            withContext(Dispatchers.Main) {
+                onComplete(result is RequestState.Success)
+            }
+        }
+    }
+
     private val _uiCreatePostState = MutableStateFlow(CreatePostState())
     val uiCreatePostState: StateFlow<CreatePostState> = _uiCreatePostState.asStateFlow()
 
@@ -151,6 +271,7 @@ class DashboardViewModel(
 
     init {
         getCurrentUser()
+        syncBlockedUsers()
         loadPostsFeed()
         loadFollowingCount()
         fetchLiveBookGenres()
@@ -427,7 +548,7 @@ class DashboardViewModel(
                             }
                             screenReady = RequestState.Idle
                         } else {
-                            val posts = data.getSuccessData()
+                            val posts = applyBlockedPostFilter(data.getSuccessData())
                             
                             // Refresh author profile images with current user data
                             val postsWithFreshImages = refreshAuthorProfileImages(posts)
@@ -568,7 +689,7 @@ class DashboardViewModel(
                 lastPostTimestamp
             ).collectLatest { data ->
                 if (data.isSuccess()) {
-                    val newPosts = data.getSuccessData()
+                    val newPosts = applyBlockedPostFilter(data.getSuccessData())
                     val allPosts = currentState.posts + newPosts
                     _uiState.value = _uiState.value.copy(
                         posts = allPosts,
@@ -1144,7 +1265,7 @@ class DashboardViewModel(
                 .collectLatest { data ->
                     println("Refreshing posts feed...$data")
                     if (data.isSuccess()) {
-                        val newPosts = data.getSuccessData()
+                        val newPosts = applyBlockedPostFilter(data.getSuccessData())
                         
                         // Refresh author profile images with current user data
                         val postsWithFreshImages = refreshAuthorProfileImages(newPosts)
@@ -1639,7 +1760,7 @@ class DashboardViewModel(
                             }
                             followScreenReady = RequestState.Idle
                         } else {
-                            val posts = data.getSuccessData()
+                            val posts = applyBlockedPostFilter(data.getSuccessData())
                             
                             // Refresh author profile images with current user data
                             val postsWithFreshImages = refreshAuthorProfileImages(posts)

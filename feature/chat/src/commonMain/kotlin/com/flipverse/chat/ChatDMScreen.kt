@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -92,6 +93,7 @@ import com.flipverse.shared.Resources.Icon.Mute
 import com.flipverse.shared.Strings
 import com.flipverse.shared.domain.ChatParticipant
 import com.flipverse.shared.PreferencesRepository.getAvatar
+import com.flipverse.shared.util.openEmailApp
 import com.flipverse.shared.util.TTSState
 import com.flipverse.data.util.formatChatTimestamp
 import com.flipverse.data.util.getCurrentTimeMillis
@@ -126,6 +128,7 @@ fun ChatDMScreen(
 
     var messageText by remember { mutableStateOf("") }
     var showMenu by remember { mutableStateOf(false) }
+    var showReportNotice by remember { mutableStateOf(false) }
     var showSendMenu by remember { mutableStateOf(false) }
     var showAvatarPromptDialog by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
@@ -378,7 +381,7 @@ fun ChatDMScreen(
                                     Icon(
                                         imageVector = vectorResource(Mute),
                                         contentDescription = Strings.mute,
-                                        tint = MaterialTheme.colorScheme.primary
+                                        tint = MaterialTheme.colorScheme.onPrimary
                                     )
                                 },
                                 text = {
@@ -400,7 +403,7 @@ fun ChatDMScreen(
                                     Icon(
                                         imageVector = vectorResource(Resources.Icon.Pin),
                                         contentDescription = Strings.pin,
-                                        tint = MaterialTheme.colorScheme.primary
+                                        tint = MaterialTheme.colorScheme.onPrimary
                                     )
                                 },
                                 text = {
@@ -412,6 +415,55 @@ fun ChatDMScreen(
                                 onClick = {
                                     chatViewModel.pinConversation(conversationId)
                                     showMenu = false
+                                },
+                                modifier = Modifier
+                                    .padding(4.dp)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            DropdownMenuItem(
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = vectorResource(Resources.Icon.Warning),
+                                        contentDescription = "Report conversation",
+                                        tint = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                },
+                                text = {
+                                    Text(
+                                        "Report conversation",
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                },
+                                onClick = {
+                                    chatViewModel.reportConversation(
+                                        conversationId = conversationId,
+                                        reportedUserId = chatState.otherParticipant?.userId
+                                    ) { didSucceed ->
+                                        if (didSucceed) {
+                                            showReportNotice = true
+                                        }
+                                    }
+                                    showMenu = false
+                                },
+                                modifier = Modifier
+                                    .padding(4.dp)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            DropdownMenuItem(
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = vectorResource(Delete),
+                                        contentDescription = "Block user",
+                                        tint = Red
+                                    )
+                                },
+                                text = { Text("Block user", color = Red) },
+                                onClick = {
+                                    val targetUserId = chatState.otherParticipant?.userId
+                                        ?: ""
+                                    chatViewModel.blockUser(targetUserId, conversationId)
+                                    showMenu = false
+                                    navigateBack()
                                 },
                                 modifier = Modifier
                                     .padding(4.dp)
@@ -461,6 +513,37 @@ fun ChatDMScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            if (showReportNotice) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = "Report recorded",
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Text(
+                            text = "Blocking removes this conversation from your inbox immediately.",
+                            color = MaterialTheme.colorScheme.onSecondary
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            TextButton(onClick = { openEmailApp("support@flipverse.app") }) {
+                                Text("Contact support", color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                            TextButton(onClick = { showReportNotice = false }) {
+                                Text("Dismiss", color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                        }
+                    }
+                }
+            }
             Box(
                 modifier = Modifier.weight(1f)
             ) {

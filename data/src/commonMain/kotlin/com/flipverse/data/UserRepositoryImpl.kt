@@ -2,6 +2,7 @@ package com.flipverse.data
 
 import com.flipverse.data.domain.UserRepository
 import com.flipverse.data.util.generateOtp
+import com.flipverse.data.util.randomFirestoreId
 import com.flipverse.data.util.generateSalt
 import com.flipverse.data.util.generateUserId
 import com.flipverse.data.util.hashPassword
@@ -16,6 +17,7 @@ import com.flipverse.shared.PreferencesRepository.saveFirstName
 import com.flipverse.shared.PreferencesRepository.saveFirstTimeLoginStatus
 import com.flipverse.shared.PreferencesRepository.saveFullName
 import com.flipverse.shared.PreferencesRepository.saveLastName
+import com.flipverse.shared.PreferencesRepository.saveTermsAccepted
 import com.flipverse.shared.PreferencesRepository.saveThumbnail
 import com.flipverse.shared.PreferencesRepository.saveUsername
 import com.flipverse.shared.RequestState
@@ -42,6 +44,8 @@ import kotlin.time.ExperimentalTime
 
 class UserRepositoryImpl : UserRepository {
     private val functions = Firebase.functions
+    private val firestore = Firebase.firestore
+    private val usersCollection = firestore.collection("user")
 
     private val dateString =
         Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).toString()
@@ -54,6 +58,76 @@ class UserRepositoryImpl : UserRepository {
             Firebase.auth.currentUser?.uid
         } else {
             getEmail()
+        }
+    }
+
+    override suspend fun getBlockedUserIds(currentUserId: String): RequestState<List<String>> {
+        if (currentUserId.isBlank()) return RequestState.Success(emptyList())
+
+        return try {
+            println("🔎 getBlockedUserIds called with currentUserId=$currentUserId")
+            println("🔎 Reading Firestore path: user/$currentUserId/privateData/moderation/blockedUsers")
+            val blockedUsersSnapshot = usersCollection
+                .document(currentUserId)
+                .collection("privateData")
+                .document("moderation")
+                .collection("blockedUsers")
+                .get()
+
+            println("🔎 getBlockedUserIds snapshot size=${blockedUsersSnapshot.documents.size}")
+
+            val blockedUserIds = blockedUsersSnapshot.documents.map { document ->
+                    val blockedUserIdField = document.get("blockedUserId") as? String
+                    println("🔎 blockedUsers document id=${document.id}, blockedUserIdField=$blockedUserIdField")
+                    blockedUserIdField.orEmpty().ifBlank { document.id }
+                }.filter { it.isNotBlank() }
+
+            println("🔎 getBlockedUserIds resolved blockedUserIds=$blockedUserIds")
+
+            RequestState.Success(blockedUserIds)
+        } catch (e: Exception) {
+            println("❌ getBlockedUserIds failed for currentUserId=$currentUserId: ${e.message}")
+            e.printStackTrace()
+            RequestState.Error("Failed to load blocked users: ${e.message}")
+        }
+    }
+
+    override suspend fun blockUser(
+        currentUserId: String,
+        blockedUserId: String
+    ): RequestState<List<String>> {
+        if (currentUserId.isBlank() || blockedUserId.isBlank()) {
+            return RequestState.Error("Current user and blocked user are required.")
+        }
+
+        return try {
+            println("🚫 blockUser called with currentUserId=$currentUserId, blockedUserId=$blockedUserId")
+            println("🚫 Writing Firestore path: user/$currentUserId/privateData/moderation/blockedUsers/$blockedUserId")
+            usersCollection
+                .document(currentUserId)
+                .collection("privateData")
+                .document("moderation")
+                .collection("blockedUsers")
+                .document(blockedUserId)
+                .set(
+                    mapOf(
+                        "id" to blockedUserId,
+                        "blockedUserId" to blockedUserId,
+                        "blockedByUserId" to currentUserId,
+                        "createdAt" to dateString,
+                        "updatedAt" to dateString,
+                        "status" to "active",
+                        "source" to "app"
+                    )
+                )
+
+            println("✅ blockUser write completed for currentUserId=$currentUserId, blockedUserId=$blockedUserId")
+
+            getBlockedUserIds(currentUserId)
+        } catch (e: Exception) {
+            println("❌ blockUser failed for currentUserId=$currentUserId, blockedUserId=$blockedUserId: ${e.message}")
+            e.printStackTrace()
+            RequestState.Error("Failed to block user: ${e.message}")
         }
     }
 
@@ -120,6 +194,7 @@ class UserRepositoryImpl : UserRepository {
                 if (fvUserExists) {
                     //todo: update first time login as false as well as store email in shared preference
                     saveEmail(user.email)
+                    saveTermsAccepted(true)
                     updateFirstTimeLogin(user.uid, false)
                     
                     // Load user data to initialize preferences
@@ -133,6 +208,7 @@ class UserRepositoryImpl : UserRepository {
                     fvUserCollection.document(user.uid).set(fvUser)
                     //todo: store email in shared preference
                     saveEmail(user.email)
+                    saveTermsAccepted(true)
                     saveFirstTimeLoginStatus(true)
                     
                     // Initialize empty preferences for new user
@@ -180,6 +256,7 @@ class UserRepositoryImpl : UserRepository {
                 updateLastLogin(user.id)
                 updateFirstTimeLogin(user.email, false)
                 saveEmail(user.email)
+                saveTermsAccepted(true)
                 saveThumbnail(user.thumbnail)
                 saveUsername(user.username)
                 saveFullName(user.fullname)
