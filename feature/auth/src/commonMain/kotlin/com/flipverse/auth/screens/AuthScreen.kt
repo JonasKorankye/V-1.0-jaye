@@ -185,6 +185,7 @@ fun AuthScreen(
                             linkAccount = false,
                             onResult = { result ->
                                 result.onSuccess { user ->
+                                    viewModel.preloadSocialIdentity(user)
                                     viewModel.createUser(
                                         fvUser = user,
                                         onSuccess = {

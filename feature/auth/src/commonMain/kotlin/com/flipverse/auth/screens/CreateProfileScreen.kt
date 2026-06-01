@@ -87,6 +87,10 @@ fun CreateProfileScreen(
     val messageBarState = rememberMessageBarState()
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(Unit) {
+        viewModel.loadSavedFullName()
+    }
+
     val photoPicker = koinInject<PhotoPicker>()
     // Store the local file for immediate preview while uploading
     var localPreviewData by remember { mutableStateOf<Any?>(null) }

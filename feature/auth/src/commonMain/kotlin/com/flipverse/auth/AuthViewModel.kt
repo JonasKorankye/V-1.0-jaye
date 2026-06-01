@@ -90,7 +90,7 @@ class AuthViewModel(
                      if (data.isSuccess()) {
                          val fetchedFlipGenres = data.getSuccessData()
                          _genres.value = fetchedFlipGenres
-                         authState = AuthState(selectedGenres = fetchedFlipGenres)
+                         authState = authState.copy(selectedGenres = fetchedFlipGenres)
                          saveFlipGenres(fetchedFlipGenres.flatMap { it.genres })
 
                      } else if (data.isError()) {
@@ -123,6 +123,13 @@ class AuthViewModel(
                 println("Error in createUser: ${e.message}")
                 onError("Error creating user: ${e.message}")
             }
+        }
+    }
+
+    fun loadSavedFullName() {
+        val savedFullName = getFullName()
+        if (savedFullName.isNotBlank() && authState.fullName.isBlank()) {
+            authState = authState.copy(fullName = savedFullName)
         }
     }
 
@@ -402,7 +409,7 @@ class AuthViewModel(
                     if (data.isSuccess()) {
                         val fetchedFlipInterests = data.getSuccessData()
                         _interests.value = fetchedFlipInterests
-                        authState = AuthState(selectedInterests = fetchedFlipInterests)
+                        authState = authState.copy(selectedInterests = fetchedFlipInterests)
                         screenReady = RequestState.Success(Unit)
 
                     } else if (data.isError()) {
@@ -495,7 +502,7 @@ class AuthViewModel(
                 nomenclatureRepository.readSuggestedFlipAccountsFlow().collectLatest { data ->
                     if (data.isSuccess()) {
                         val fetchedFlipAccounts = data.getSuccessData()
-                        authState = AuthState(selectedSuggestions = fetchedFlipAccounts)
+                        authState = authState.copy(selectedSuggestions = fetchedFlipAccounts)
                         _suggestedFlipAccounts.value = fetchedFlipAccounts
                         screenReady = RequestState.Success(Unit)
 
